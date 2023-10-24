@@ -1,59 +1,51 @@
-Lincă Nicolae-Robert
-331CC
+# Producer-Consumer Marketplace
 
-# Tema 1 - Marketplace
-
-Organizare
+Organization
 -
 ### **Marketplace**
-Are rolul de mediator între thread-urile de tip *Consumer* si *Producer*, clasa oferind o interfață comună între aceste tipuri de thread-uri cu următoarele facilități:
+Acts as a mediator between *Consumer* and *Producer* threads, offering a common interface for these types of threads with the following functionalities:
 
-1. Înregistrarea unui producător
-2. Punerea în vânzare a unui produs de către un producător înregistrat
-3. Solicitarea și obținerea unui coș de cumpărături de către un consumator
-4. Adăugarea unui produs în coș dacă acesta se află spre vânzare
-5. Eliminarea unui produs din coș și repunerea sa spre vânzare pe piață (market)
-6. Finalizarea unei comenzi asociate unui coș de cumpărături
+1. Registering a producer
+2. Placing a product for sale by a registered producer
+3. Requesting and obtaining a shopping cart by a consumer
+4. Adding a product to the cart if it is available for sale
+5. Removing a product from the cart and putting it back on the market
+6. Finalizing an order associated with a shopping cart
 
 ### **Producer**
-Un producător are rolul de a se înregistra pe piață, după care acesta poate să înceapă să publice continuu produse pe piață, fiind limitat la un număr maxim de produse ce pot exista în același timp spre vânzare. Va exista mereu un timp necesar realizării unui produs, precum
-și un timp de așteptare dacă nu poate să pună pe piată produsul creat.
+A producer's role is to register in the market. After registration, they can continuously publish products in the market but are limited to a maximum number of products that can be available for sale at the same time. There is always a required time for product creation, as well as a waiting time if the producer cannot put the created product on the market.
 
 ### **Consumer**
-Un consumator mai întâi va procura un coș de cumpărături de la *Marketplace*, după care va putea să adauge un produs existent pe piață sau va aștepta până când acesta devine disponibil, sau de asemnea poate să elimine un produs din coș și să il repună spre vânzare, toate acestea întâmplandu-se pe parcusul unei sesiune de cumpărături. O dată finalizată lista de operații (adaugare/eliminare) din cadrul unei sesiuni de cumpărături,
-va plasa comanda, informând *Marketplace* să elibereze coșul pentru ulterioare folosiri
-de către acesta și afișând produsele care au rămas la final în coș. Un consumator poate să realizeze mai multe sesiuni de cumpărături, însă iși va păstra același coș de cumpărături.
+A consumer first procures a shopping cart from the *Marketplace*. Then, they can add an existing product from the market or wait for it to become available. They can also remove a product from the cart and put it back on sale. All these actions take place during a shopping session. Once the list of shopping session operations (add/remove) is completed, they place an order, instructing the *Marketplace* to release the cart for future use and displaying the products left in the cart. A consumer can perform multiple shopping sessions, but they will keep the same shopping cart.
 
-
-Implementare
+Implementation
 -
+For more detailed and specific implementation information, refer to the code comments for each function/class.
 
-Pentru detalii mai ample/specifice de implementare consultați comentariile de cod de la fiecare funcțtie / clasă.
-
-Pentru gestionarea consumatorilor, producătorilor, produselor aflate spre vânzare și a coșurilor de cumpărături, precum și a operațiilor cu acestea, clasa le gestionează sub forma următoarelor structuri:
+To manage consumers, producers, products available for sale, and operations with them, the class manages the following structures:
 
     # the maximum size of a queue associated with each producer
     self.queue_size_per_producer = queue_size_per_producer
 
-    # list withh all products and their producers_id as tuple
+    # list with all products and their producers_id as a tuple
     self.products = []
 
-    # dictionary with how many products can a producer still publish in product list
+    # dictionary with how many products a producer can still publish in the product list
     self.producer_available_queue_space = {}
 
-    # dictionary with consumers carts, each cart is represented as a list
+    # dictionary with consumer carts, each cart is represented as a list
     self.consumer_carts = {}
 
-* Elemetele listei de produse sunt reținute sub forma de tuple(*product*, *producer_id*) pentru a facilita modificarea ușoară a numărului de produse pe care un producător le mai poate pune pe piață (valoare salvată în dicționarul *producer_available_queue_space*) sau a readăugării unui produs înapoi pe piață dintr-un coș, deoarece coșul fiecărui cumprător (care este gestionat cu ajutorul dicționarului *consumer_carts*) păstrează același al elementelor ca lista de produse
-* Id-urile producătorilor sunt identificate prin numere întregi, oferite incremental pe baza numărului de producători deja existenți pe piață în momentul solicitării
-* Fiecare cumpărător are asignat un coș unic identificat prin *cart_id*, care este generat pe același principiu ca id-urile producătorilor. Deși un cumpărător poate face mai multe sesiuni de cumpărături, descrise prin adaugare/eliminare de produse în coș, el iși va păstra mereu același *cart_id*
-* Pentru selectarea unui produs în momentul în care un consumator dorește să îl adauge în coș, îl va lua pe primul pe care îl găsețe în lista de produse de tipul celui căutat, iar dacă nu va găsi va aștepta un timp până să reîncerce
-* În momentul plasării comenzii, coșul de cumpărături al consumatorului este golit
-și îi este returnată o lista doar cu elemtele *product* din tuple pentru a le afișa
-* Coșurile de cumpărături pentru fiecare consumator sunt inițializate ca liste goale
+The products' list elements are stored as tuples (*product*, *producer_id*) to facilitate easy modification of the number of products a producer can put on the market (value saved in the dictionary *producer_available_queue_space*) or to re-add a product back to the market from a cart. The consumer's cart (managed through the *consumer_carts* dictionary) retains the same elements as the product list.
 
-### **Sincronizarea thread-urilor**
-Pentru sincronizarea thread-urilor au fost folosite următoarele *Lock-uri* pentru a elimina problemele de concurență:
+Producer IDs are identified by integers, assigned incrementally based on the number of existing producers in the market at the time of registration. Each consumer is assigned a unique cart identified by a *cart_id*, generated on the same principle as producer IDs. While a consumer can have multiple shopping sessions (described by adding/removing products in the cart), they will always keep the same *cart_id*.
+
+When a consumer wants to select a product, they will take the first one they find in the product list that matches their search criteria. If they don't find it, they will wait for a while before trying again.
+
+Upon placing an order, the consumer's shopping cart is emptied, and a list containing only the *product* elements from the tuples is returned for display. The shopping carts for each consumer are initially initialized as empty lists.
+
+### **Thread Synchronization**
+The following *Locks* have been used for thread synchronization to eliminate concurrency issues:
 
     self.register_lock = Lock()         # lock to get and register a producer_id
     self.carts_lock = Lock()            # lock for consumer carts dictionary
@@ -61,25 +53,24 @@ Pentru sincronizarea thread-urilor au fost folosite următoarele *Lock-uri* pent
     self.producer_space_lock = Lock()   # lock for the dictionary of free space per producer
     self.print_order_lock = Lock()      # lock to make printing order thread safe in consumer
 
-Aceste *Lock-uri* asigură faptul că nu se pot întâmpla următoarele probleme de concurență (race-condition):
+These *Locks* ensure that the following concurrency issues (race conditions) do not occur:
 
-1. Nu pot exista doi producători care să se înregistreze în același timp
-2. Nu pot exista doi producători care să publice un produs în același timp, riscând a strica lista de produse
-3. Nu pot exista doi cumpărători care să solicite în același timp un coș, riscănd a se oferi două coșuri cu același id, nerespectănd unicitatea și distincția între ele
-4. Nu pot exista doi cumpărători care să caute un produs și să âl aduage ân coș în același timp pentru a evita cazul în care ambii ar incerca să modifice lista de produse, putând provoca scenarii de forma: să pună în coș ambii același produs, să strice ordinea produselor în lista putând provoca suprascrieri sau ignorarea unor produse ân momentul ân care alți cumpărători ar căuta un produs să îl aduage în coș, să modifice invalid spațiul disponibil unui producător pentru publicare de produse etc.
-5. Nu pot exista doi cumpărători care să scoată din coș un produs și să îl repună în lista de produse putând provoca probleme de concurență ca la 4.
-6. Nu pot exista doi cumpărători care să scrie la output lista de produse cumpărate după ce au finalizat comanda, evitând eventuale probleme de suprascrieri
+1. Two producers cannot register at the same time.
+2. Two producers cannot publish a product at the same time, avoiding the risk of disrupting the product list.
+3. Two consumers cannot request a cart at the same time, ensuring that two carts with the same ID are not offered, maintaining their uniqueness and distinction.
+4. Two consumers cannot search for a product and add it to their cart at the same time to avoid modifying the product list simultaneously, preventing scenarios where both would try to add the same product to their cart, potentially disrupting the product order, causing overwrites, or ignoring some products when other consumers search for them. They may try to add a product, which could result in invalid producer space for product publishing, etc.
+5. Two consumers cannot remove a product from their cart and put it back on the product list, avoiding concurrency issues as in 4.
+6. Two consumers cannot write the list of purchased products to the output after completing an order, preventing potential overwrites.
 
-Resurse utilizate
+Resources Used
 -
-
-* https://docs.python.org/3/tutorial/datastructures.html
-* https://docs.python.org/3/howto/logging.html
-* https://docs.python.org/3/library/unittest.html#organizing-test-code
-* https://ocw.cs.pub.ro/courses/asc/laboratoare/02
-* https://ocw.cs.pub.ro/courses/asc/laboratoare/03
-* https://ocw.cs.pub.ro/courses/icalc/laboratoare/laborator-05how-to-set-timestamps-on-gmt-utc-on-python-logging
-* https://stackoverflow.com/questions/6321160/
-* https://stackoverflow.com/questions/40088496/how-to-use-pythons-rotatingfilehandler
-* https://stackoverflow.com/questions/51477200/how-to-use-logger-to-print-a-list-in-just-one-line-in-python
-* https://medium.com/@masnun/infinitely-cycling-through-a-list-in-python-ef37e9df100
+* [Python Data Structures](https://docs.python.org/3/tutorial/datastructures.html)
+* [Python Logging](https://docs.python.org/3/howto/logging.html)
+* [Python Unittest](https://docs.python.org/3/library/unittest.html#organizing-test-code)
+* [OCW - Advanced Systems Programming Course](https://ocw.cs.pub.ro/courses/asc/laboratoare/02)
+* [OCW - Advanced Systems Programming Course](https://ocw.cs.pub.ro/courses/asc/laboratoare/03)
+* [OCW - Introduction to Algorithms Course](https://ocw.cs.pub.ro/courses/icalc/laboratoare/laborator-05how-to-set-timestamps-on-gmt-utc-on-python-logging)
+* [Stack Overflow](https://stackoverflow.com/questions/6321160/)
+* [Stack Overflow](https://stackoverflow.com/questions/40088496/how-to-use-pythons-rotatingfilehandler)
+* [Stack Overflow](https://stackoverflow.com/questions/51477200/how-to-use-logger-to-print-a-list-in-just-one-line-in-python)
+* [Medium - Cycling Through a List in Python](https://medium.com/@masnun/infinitely-cycling-through-a-list-in-python-ef37e9df100)
